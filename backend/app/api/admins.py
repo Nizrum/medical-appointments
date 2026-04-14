@@ -1,0 +1,271 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from datetime import datetime, date, timedelta
+from typing import List, Optional
+
+from ..dependencies import get_db, get_current_admin
+from ..models.user import User
+from ..models.doctor import Doctor
+from ..models.schedule import TimeSlot, ScheduleTemplate
+from ..models.appointment import Appointment
+from ..models.service import Service
+from ..schemas.user import UserResponse, UserRoleUpdate
+from ..schemas.doctor import (
+    DoctorCreate,
+    DoctorResponse,
+    DoctorWithUserResponse,
+)
+from ..schemas.appointment import AppointmentDetailResponse
+
+router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.put("/users/{user_id}/role", response_model=UserResponse)
+def change_user_role(
+    user_id: int,
+    role_data: UserRoleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    """Изменить роль пользователя (только для администратора)"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=400, detail="Cannot change your own role"
+        )
+
+    user.role = role_data.role
+    db.commit()
+    db.refresh(user)
+
+    if role_data.role == "doctor":
+        existing_doctor = (
+            db.query(Doctor).filter(Doctor.user_id == user.id).first()
+        )
+        if not existing_doctor:
+            doctor = Doctor(
+                user_id=user.id,
+                specialization="Не указана",
+                cabinet_number="000",
+                appointment_duration=30,
+            )
+            db.add(doctor)
+            db.commit()
+
+    return user
+
+
+@router.get("/doctors", response_model=List[DoctorWithUserResponse])
+def get_all_doctors(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    """Получить всех врачей (только для администратора)"""
+    doctors = db.query(Doctor).filter(Doctor.is_active == True).all()
+
+    result = []
+    for doctor in doctors:
+        user = db.query(User).filter(User.id == doctor.user_id).first()
+        if user:
+            result.append(
+                {
+                    "id": doctor.id,
+                    "user_id": doctor.user_id,
+                    "specialization": doctor.specialization,
+                    "cabinet_number": doctor.cabinet_number,
+                    "appointment_duration": doctor.appointment_duration,
+                    "is_active": doctor.is_active,
+                    "created_at": doctor.created_at,
+                    "full_name": user.full_name,
+                    "email": user.email,
+                    "phone": user.phone,
+                }
+            )
+
+    return result
+
+
+@router.post("/doctors", response_model=DoctorResponse)
+def create_doctor(
+    doctor_data: DoctorCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    doctor = Doctor(**doctor_data.dict())
+    db.add(doctor)
+    db.commit()
+    db.refresh(doctor)
+    return doctor
+
+
+@router.put("/doctors/{doctor_id}", response_model=DoctorResponse)
+def update_doctor(
+    doctor_id: int,
+    doctor_data: DoctorCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    for key, value in doctor_data.dict().items():
+        setattr(doctor, key, value)
+
+    db.commit()
+    db.refresh(doctor)
+    return doctor
+
+
+@router.delete("/doctors/{doctor_id}")
+def delete_doctor(
+    doctor_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    doctor.is_active = False
+    db.commit()
+    return {"message": "Doctor deactivated successfully"}
+
+
+@router.post("/doctors/{doctor_id}/schedule/template")
+def set_schedule_template(
+    doctor_id: int,
+    day_of_week: int,
+    start_time: str,
+    end_time: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    template = ScheduleTemplate(
+        doctor_id=doctor_id,
+        day_of_week=day_of_week,
+        start_time=start_time,
+        end_time=end_time,
+    )
+    db.add(template)
+    db.commit()
+    return {"message": "Schedule template created"}
+
+
+@router.post("/doctors/{doctor_id}/slots/generate")
+def generate_slots(
+    doctor_id: int,
+    start_date: date,
+    end_date: date,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    templates = (
+        db.query(ScheduleTemplate)
+        .filter(
+            ScheduleTemplate.doctor_id == doctor_id,
+            ScheduleTemplate.is_working == True,
+        )
+        .all()
+    )
+
+    if not templates:
+        raise HTTPException(
+            status_code=400,
+            detail="No schedule template found for this doctor",
+        )
+
+    current_date = start_date
+    while current_date <= end_date:
+        day_of_week = current_date.weekday()
+        template = next(
+            (t for t in templates if t.day_of_week == day_of_week), None
+        )
+
+        if template:
+            slot_start = datetime.combine(current_date, template.start_time)
+            slot_end = datetime.combine(current_date, template.end_time)
+
+            while slot_start < slot_end:
+                slot_end_time = slot_start + timedelta(
+                    minutes=30
+                )  # Default 30 min slots
+
+                existing = (
+                    db.query(TimeSlot)
+                    .filter(
+                        TimeSlot.doctor_id == doctor_id,
+                        TimeSlot.start_time == slot_start,
+                    )
+                    .first()
+                )
+
+                if not existing:
+                    slot = TimeSlot(
+                        doctor_id=doctor_id,
+                        start_time=slot_start,
+                        end_time=slot_end_time,
+                        status="free",
+                    )
+                    db.add(slot)
+
+                slot_start = slot_end_time
+
+        current_date += timedelta(days=1)
+
+    db.commit()
+    return {"message": f"Slots generated from {start_date} to {end_date}"}
+
+
+@router.get("/users", response_model=List[UserResponse])
+def get_all_users(
+    full_name: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    """Получить всех пользователей с фильтром по имени (только для администратора)"""
+    query = db.query(User)
+
+    if full_name:
+        query = query.filter(User.full_name.ilike(f"%{full_name}%"))
+
+    users = query.all()
+    return users
+
+
+@router.post("/users/{user_id}/make-doctor")
+def make_user_doctor(
+    user_id: int,
+    specialization: str = "Общий врач",
+    cabinet_number: str = "100",
+    appointment_duration: int = 30,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    """Назначить пользователя врачом"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    existing_doctor = (
+        db.query(Doctor).filter(Doctor.user_id == user_id).first()
+    )
+    if existing_doctor:
+        raise HTTPException(status_code=400, detail="User is already a doctor")
+
+    doctor = Doctor(
+        user_id=user_id,
+        specialization=specialization,
+        cabinet_number=cabinet_number,
+        appointment_duration=appointment_duration,
+    )
+    db.add(doctor)
+    db.commit()
+
+    return {
+        "message": f"User {user.email} is now a doctor",
+        "doctor_id": doctor.id,
+    }
