@@ -3,7 +3,6 @@ from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
-    port: int = 8000
     database_url: str = (
         "postgresql://clinic_user:clinic_password@localhost:5432/clinic_db"
     )

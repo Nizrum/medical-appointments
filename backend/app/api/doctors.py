@@ -117,6 +117,90 @@ def get_my_patients(
     return result
 
 
+@router.put("/appointments/{appointment_id}/complete")
+def complete_appointment(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_doctor),
+):
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor profile not found")
+
+    appointment = (
+        db.query(Appointment)
+        .filter(
+            Appointment.id == appointment_id,
+            Appointment.doctor_id == doctor.id,
+        )
+        .first()
+    )
+
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    if appointment.status == "cancelled":
+        raise HTTPException(
+            status_code=400, detail="Cannot complete cancelled appointment"
+        )
+
+    appointment.status = "completed"
+
+    slot = (
+        db.query(TimeSlot)
+        .filter(TimeSlot.id == appointment.time_slot_id)
+        .first()
+    )
+    if slot:
+        slot.status = "completed"
+
+    db.commit()
+
+    return {"message": "Appointment marked as completed"}
+
+
+@router.put("/appointments/{appointment_id}/cancel")
+def cancel_appointment_doctor(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_doctor),
+):
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor profile not found")
+
+    appointment = (
+        db.query(Appointment)
+        .filter(
+            Appointment.id == appointment_id,
+            Appointment.doctor_id == doctor.id,
+        )
+        .first()
+    )
+
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    if appointment.status == "completed":
+        raise HTTPException(
+            status_code=400, detail="Cannot cancel completed appointment"
+        )
+
+    appointment.status = "cancelled"
+
+    slot = (
+        db.query(TimeSlot)
+        .filter(TimeSlot.id == appointment.time_slot_id)
+        .first()
+    )
+    if slot:
+        slot.status = "free"
+
+    db.commit()
+
+    return {"message": "Appointment cancelled"}
+
+
 @router.get("/profile")
 def get_my_doctor_profile(
     db: Session = Depends(get_db),
