@@ -220,6 +220,193 @@ def generate_slots(
     return {"message": f"Slots generated from {start_date} to {end_date}"}
 
 
+@router.get("/appointments", response_model=List[AppointmentDetailResponse])
+def get_all_appointments(
+    doctor_id: Optional[int] = None,
+    status: Optional[str] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    query = db.query(Appointment)
+
+    if doctor_id:
+        query = query.filter(Appointment.doctor_id == doctor_id)
+    if status:
+        query = query.filter(Appointment.status == status)
+    if start_date:
+        query = query.filter(Appointment.created_at >= start_date)
+    if end_date:
+        query = query.filter(
+            Appointment.created_at <= end_date + timedelta(days=1)
+        )
+
+    appointments = query.order_by(Appointment.created_at.desc()).all()
+
+    result = []
+    for app in appointments:
+        patient = db.query(User).filter(User.id == app.patient_id).first()
+        doctor = db.query(Doctor).filter(Doctor.id == app.doctor_id).first()
+        doctor_user = (
+            db.query(User).filter(User.id == doctor.user_id).first()
+            if doctor
+            else None
+        )
+        slot = (
+            db.query(TimeSlot).filter(TimeSlot.id == app.time_slot_id).first()
+        )
+        service = (
+            db.query(Service).filter(Service.id == app.service_id).first()
+            if app.service_id
+            else None
+        )
+
+        result.append(
+            {
+                "id": app.id,
+                "patient_id": app.patient_id,
+                "doctor_id": app.doctor_id,
+                "time_slot_id": app.time_slot_id,
+                "service_id": app.service_id,
+                "status": app.status,
+                "complaints": app.complaints,
+                "created_at": app.created_at,
+                "updated_at": app.updated_at,
+                "doctor_name": doctor_user.full_name if doctor_user else "",
+                "doctor_specialization": doctor.specialization
+                if doctor
+                else "",
+                "doctor_cabinet": doctor.cabinet_number if doctor else "",
+                "time_start": slot.start_time if slot else None,
+                "time_end": slot.end_time if slot else None,
+                "service_name": service.name if service else None,
+                "patient_name": patient.full_name if patient else "",
+                "patient_phone": patient.phone if patient else "",
+            }
+        )
+
+    return result
+
+
+@router.put("/appointments/{appointment_id}/confirm")
+def confirm_appointment(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    appointment = (
+        db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    )
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    appointment.status = "confirmed"
+    db.commit()
+
+    return {"message": "Appointment confirmed"}
+
+
+@router.put("/appointments/{appointment_id}/reschedule")
+def reschedule_appointment(
+    appointment_id: int,
+    new_time_slot_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    appointment = (
+        db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    )
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    old_slot = (
+        db.query(TimeSlot)
+        .filter(TimeSlot.id == appointment.time_slot_id)
+        .first()
+    )
+    if old_slot:
+        old_slot.status = "free"
+
+    new_slot = (
+        db.query(TimeSlot).filter(TimeSlot.id == new_time_slot_id).first()
+    )
+    if not new_slot or new_slot.status != "free":
+        raise HTTPException(
+            status_code=400, detail="New time slot not available"
+        )
+
+    appointment.time_slot_id = new_time_slot_id
+    appointment.status = "confirmed"
+    new_slot.status = "booked"
+
+    db.commit()
+
+    return {"message": "Appointment rescheduled successfully"}
+
+
+@router.get("/reports/doctors-load")
+def get_doctors_load(
+    start_date: date,
+    end_date: date,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    doctors = db.query(Doctor).filter(Doctor.is_active == True).all()
+    result = []
+
+    for doctor in doctors:
+        total_slots = (
+            db.query(TimeSlot)
+            .filter(
+                TimeSlot.doctor_id == doctor.id,
+                TimeSlot.start_time >= start_date,
+                TimeSlot.start_time <= end_date + timedelta(days=1),
+            )
+            .count()
+        )
+
+        booked_slots = (
+            db.query(TimeSlot)
+            .filter(
+                TimeSlot.doctor_id == doctor.id,
+                TimeSlot.start_time >= start_date,
+                TimeSlot.start_time <= end_date + timedelta(days=1),
+                TimeSlot.status.in_(["booked", "completed"]),
+            )
+            .count()
+        )
+
+        completed_appointments = (
+            db.query(Appointment)
+            .filter(
+                Appointment.doctor_id == doctor.id,
+                Appointment.status == "completed",
+                Appointment.created_at >= start_date,
+                Appointment.created_at <= end_date + timedelta(days=1),
+            )
+            .count()
+        )
+
+        doctor_user = db.query(User).filter(User.id == doctor.user_id).first()
+
+        result.append(
+            {
+                "doctor_id": doctor.id,
+                "doctor_name": doctor_user.full_name if doctor_user else "",
+                "specialization": doctor.specialization,
+                "total_slots": total_slots,
+                "booked_slots": booked_slots,
+                "occupancy_rate": (booked_slots / total_slots * 100)
+                if total_slots > 0
+                else 0,
+                "completed_appointments": completed_appointments,
+            }
+        )
+
+    return result
+
+
 @router.get("/users", response_model=List[UserResponse])
 def get_all_users(
     full_name: Optional[str] = None,
