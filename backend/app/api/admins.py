@@ -8,7 +8,7 @@ from ..models.user import User
 from ..models.doctor import Doctor
 from ..models.schedule import TimeSlot, ScheduleTemplate
 from ..models.appointment import Appointment
-from ..models.service import Service
+from ..models.service import Service, doctor_services
 from ..schemas.user import UserResponse, UserRoleUpdate
 from ..schemas.doctor import (
     DoctorCreate,
@@ -456,3 +456,41 @@ def make_user_doctor(
         "message": f"User {user.email} is now a doctor",
         "doctor_id": doctor.id,
     }
+
+
+@router.get("/services/{service_id}/doctors")
+def get_doctors_by_service_admin(
+    service_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    """Получить всех врачей, предоставляющих конкретную услугу (для админа)"""
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    doctors = (
+        db.query(Doctor)
+        .join(doctor_services, Doctor.id == doctor_services.c.doctor_id)
+        .filter(doctor_services.c.service_id == service_id)
+        .all()
+    )
+
+    result = []
+    for doctor in doctors:
+        user = db.query(User).filter(User.id == doctor.user_id).first()
+        result.append(
+            {
+                "id": doctor.id,
+                "user_id": doctor.user_id,
+                "full_name": user.full_name if user else "",
+                "email": user.email if user else "",
+                "phone": user.phone if user else "",
+                "specialization": doctor.specialization,
+                "cabinet_number": doctor.cabinet_number,
+                "appointment_duration": doctor.appointment_duration,
+                "is_active": doctor.is_active,
+            }
+        )
+
+    return result

@@ -9,7 +9,7 @@ from ..models.user import User
 from ..models.doctor import Doctor
 from ..models.schedule import TimeSlot
 from ..models.appointment import Appointment
-from ..models.service import Service
+from ..models.service import Service, doctor_services
 from ..schemas.appointment import (
     AppointmentCreate,
     AppointmentResponse,
@@ -268,3 +268,46 @@ def rebook_appointment(
     db.refresh(new_appointment)
 
     return new_appointment
+
+
+@router.get("/services/{service_id}/doctors")
+def get_doctors_by_service(
+    service_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_patient),
+):
+    """Получить всех врачей, предоставляющих конкретную услугу"""
+    # Проверяем, существует ли услуга
+    service = (
+        db.query(Service)
+        .filter(Service.id == service_id, Service.is_active == True)
+        .first()
+    )
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    # Получаем врачей через связь many-to-many
+    doctors = (
+        db.query(Doctor)
+        .join(doctor_services, Doctor.id == doctor_services.c.doctor_id)
+        .filter(
+            doctor_services.c.service_id == service_id,
+            Doctor.is_active == True,
+        )
+        .all()
+    )
+
+    result = []
+    for doctor in doctors:
+        user = db.query(User).filter(User.id == doctor.user_id).first()
+        result.append(
+            {
+                "id": doctor.id,
+                "full_name": user.full_name if user else "",
+                "specialization": doctor.specialization,
+                "cabinet_number": doctor.cabinet_number,
+                "appointment_duration": doctor.appointment_duration,
+            }
+        )
+
+    return result
