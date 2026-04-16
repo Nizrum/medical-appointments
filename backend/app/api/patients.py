@@ -311,3 +311,30 @@ def get_doctors_by_service(
         )
 
     return result
+
+
+@router.get("/doctors/{doctor_id}/services")
+def get_services_by_doctor_patient(
+    doctor_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_patient),
+):
+    """Получить все услуги, предоставляемые конкретным врачом (для пациента)"""
+    doctor = (
+        db.query(Doctor)
+        .filter(Doctor.id == doctor_id, Doctor.is_active == True)
+        .first()
+    )
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    services = (
+        db.query(Service)
+        .join(doctor_services, Service.id == doctor_services.c.service_id)
+        .filter(
+            doctor_services.c.doctor_id == doctor_id, Service.is_active == True
+        )
+        .all()
+    )
+
+    return services
