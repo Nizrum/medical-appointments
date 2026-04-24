@@ -41,7 +41,19 @@ const routes = [
 		name: "MyAppointments",
 		component: () => import("../views/MyAppointments.vue"),
 		meta: { requiresAuth: true, role: "patient" },
-	}
+	},
+	{
+		path: "/doctor-dashboard",
+		name: "DoctorDashboard",
+		component: () => import("../views/DoctorDashboard.vue"),
+		meta: { requiresAuth: true, role: "doctor" },
+	},
+	{
+		path: "/doctor-schedule",
+		name: "DoctorSchedule",
+		component: () => import("../views/DoctorSchedule.vue"),
+		meta: { requiresAuth: true, role: "doctor" },
+	},
 ];
 
 const router = createRouter({
