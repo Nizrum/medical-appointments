@@ -78,6 +78,18 @@ const routes = [
 		component: () => import("../views/AdminAppointments.vue"),
 		meta: { requiresAuth: true, role: "admin" },
 	},
+	{
+		path: "/admin/services",
+		name: "AdminServices",
+		component: () => import("../views/ServicesManagement.vue"),
+		meta: { requiresAuth: true, role: "admin" },
+	},
+	{
+		path: "/services",
+		name: "ServicesList",
+		component: () => import("../views/ServicesList.vue"),
+		meta: { requiresAuth: true, role: "patient" },
+	},
 ];
 
 const router = createRouter({
