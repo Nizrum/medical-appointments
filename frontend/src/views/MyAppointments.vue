@@ -1,6 +1,6 @@
 <template>
-	<div class="bg-white shadow rounded-lg p-6">
-		<h1 class="text-2xl font-bold mb-6">Мои записи</h1>
+	<div class="page-card">
+		<h1 class="mb-6">Мои записи</h1>
 
 		<div
 			v-if="loading"
@@ -9,7 +9,7 @@
 		</div>
 		<div
 			v-else-if="appointmentsStore.appointments.length === 0"
-			class="text-center py-8 text-gray-500">
+			class="text-center py-8 text-slate-500">
 			Записи не найдены
 		</div>
 		<div
@@ -34,7 +34,7 @@
 	const loading = ref(true);
 
 	const cancelAppointment = async (appointmentId) => {
-		if (confirm("Are you sure you want to cancel this appointment?")) {
+		if (confirm("Вы уверены, что хотите отменить запись?")) {
 			const result =
 				await appointmentsStore.cancelAppointment(appointmentId);
 			if (!result.success) {

@@ -1,7 +1,7 @@
 <template>
-	<div class="bg-white shadow rounded-lg p-6">
+	<div class="page-card">
 		<div class="flex justify-between items-center mb-6">
-			<h1 class="text-2xl font-bold">Управление услугами</h1>
+			<h1>Управление услугами</h1>
 			<button
 				@click="openCreateModal"
 				class="btn-primary">
@@ -20,13 +20,13 @@
 			<div
 				v-for="service in adminStore.services"
 				:key="service.id"
-				class="border rounded-lg p-4 hover:shadow-lg transition">
+				class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow">
 				<div class="flex justify-between items-start mb-3">
 					<h3 class="text-lg font-semibold">{{ service.name }}</h3>
 					<div class="space-x-2">
 						<button
 							@click="openEditModal(service)"
-							class="text-blue-600 hover:text-blue-900">
+							class="text-blue-700 hover:text-blue-900">
 							✏️
 						</button>
 						<button
@@ -38,15 +38,15 @@
 				</div>
 				<p
 					v-if="service.description"
-					class="text-gray-600 text-sm mb-2">
+					class="text-slate-600 text-sm mb-2">
 					{{ service.description }}
 				</p>
 				<p
 					v-if="service.price"
-					class="text-gray-700 font-semibold">
+					class="text-slate-800 font-semibold">
 					Цена: {{ service.price }} ₽
 				</p>
-				<p class="text-gray-600 text-sm">
+				<p class="text-slate-600 text-sm">
 					Длительность: {{ service.duration }} мин
 				</p>
 			</div>
@@ -55,9 +55,9 @@
 		<!-- Модальное окно создания/редактирования услуги -->
 		<div
 			v-if="showServiceModal"
-			class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+			class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
 			<div
-				class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+				class="relative top-20 mx-auto w-96 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
 				<h3 class="text-lg font-medium mb-4">
 					{{
 						editingService

@@ -1,7 +1,7 @@
 <template>
-	<div class="bg-white shadow rounded-lg p-6">
+	<div class="page-card">
 		<div class="flex justify-between items-center mb-6">
-			<h1 class="text-2xl font-bold">Управление врачами</h1>
+			<h1>Управление врачами</h1>
 			<button
 				@click="openCreateModal"
 				class="btn-primary">
@@ -16,42 +16,24 @@
 		</div>
 		<div
 			v-else-if="adminStore.doctors.length === 0"
-			class="text-center py-8 text-gray-500">
+			class="text-center py-8 text-slate-500">
 			Нет врачей
 		</div>
 		<div
 			v-else
 			class="overflow-x-auto">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
+			<table class="data-table">
+				<thead>
 					<tr>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							ФИО
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Специализация
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Кабинет
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Email
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Телефон
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Действия
-						</th>
+						<th>ФИО</th>
+						<th>Специализация</th>
+						<th>Кабинет</th>
+						<th>Email</th>
+						<th>Телефон</th>
+						<th>Действия</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
+				<tbody class="bg-white">
 					<tr
 						v-for="doctor in adminStore.doctors"
 						:key="doctor.id">
@@ -74,22 +56,22 @@
 							<div class="grid grid-cols-2 gap-2">
 								<button
 									@click="openServicesModal(doctor)"
-									class="bg-purple-600 text-white px-2 py-1.5 rounded-lg text-xs hover:bg-purple-700 transition flex items-center justify-center gap-1">
+									class="rounded-lg bg-violet-600 px-2 py-1.5 text-xs font-medium text-white transition hover:bg-violet-700">
 									Услуги
 								</button>
 								<button
 									@click="openScheduleModal(doctor)"
-									class="bg-blue-600 text-white px-2 py-1.5 rounded-lg text-xs hover:bg-blue-700 transition flex items-center justify-center gap-1">
+									class="rounded-lg bg-blue-700 px-2 py-1.5 text-xs font-medium text-white transition hover:bg-blue-800">
 									Расписание
 								</button>
 								<button
 									@click="openEditModal(doctor)"
-									class="bg-green-600 text-white px-2 py-1.5 rounded-lg text-xs hover:bg-green-700 transition flex items-center justify-center gap-1">
+									class="rounded-lg bg-emerald-600 px-2 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-700">
 									Редактировать
 								</button>
 								<button
 									@click="confirmDelete(doctor)"
-									class="bg-red-600 text-white px-2 py-1.5 rounded-lg text-xs hover:bg-red-700 transition flex items-center justify-center gap-1">
+									class="rounded-lg bg-rose-700 px-2 py-1.5 text-xs font-medium text-white transition hover:bg-rose-800">
 									Удалить
 								</button>
 							</div>
@@ -102,9 +84,9 @@
 		<!-- Модальное окно создания/редактирования врача -->
 		<div
 			v-if="showDoctorModal"
-			class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+			class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
 			<div
-				class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+				class="relative top-20 mx-auto w-96 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
 				<h3 class="text-lg font-medium mb-4">
 					{{
 						editingDoctor
@@ -198,82 +180,82 @@
 		<!-- Модальное окно управления услугами врача -->
 		<div
 			v-if="showServicesModal"
-			class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+			class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
 			<div
-				class="relative top-20 mx-auto p-5 border w-[800px] shadow-lg rounded-md bg-white">
+				class="relative top-20 mx-auto w-[800px] rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
 				<div class="flex justify-between items-center mb-4">
 					<h3 class="text-xl font-bold">
 						Услуги врача: {{ selectedDoctor?.full_name }}
 					</h3>
 					<button
 						@click="showServicesModal = false"
-						class="text-gray-500 hover:text-gray-700 text-2xl">
+						class="text-slate-500 hover:text-slate-700 text-2xl">
 						×
 					</button>
 				</div>
 
 				<div class="grid md:grid-cols-2 gap-4">
 					<!-- Доступные услуги -->
-					<div class="border rounded-lg p-3">
-						<h4 class="font-semibold text-md mb-2 text-gray-700">
+					<div class="rounded-xl border border-slate-200 p-3">
+						<h4 class="font-semibold text-md mb-2 text-slate-700">
 							📋 Доступные услуги
 						</h4>
 						<div class="space-y-1 max-h-96 overflow-y-auto">
 							<div
 								v-for="service in availableServices"
 								:key="service.id"
-								class="flex justify-between items-center p-2 border rounded hover:bg-gray-50">
+								class="flex justify-between items-center rounded-lg border border-slate-200 p-2 hover:bg-slate-50">
 								<div class="flex-1">
 									<p class="font-medium text-sm">
 										{{ service.name }}
 									</p>
-									<p class="text-xs text-gray-500">
+									<p class="text-xs text-slate-500">
 										{{ service.duration }} мин |
 										{{ service.price }} ₽
 									</p>
 								</div>
 								<button
 									@click="assignService(service.id)"
-									class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 ml-2">
+									class="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-700 ml-2">
 									Добавить
 								</button>
 							</div>
 							<div
 								v-if="availableServices.length === 0"
-								class="text-center text-gray-500 py-4 text-sm">
+								class="text-center text-slate-500 py-4 text-sm">
 								Нет доступных услуг
 							</div>
 						</div>
 					</div>
 
 					<!-- Назначенные услуги -->
-					<div class="border rounded-lg p-3">
-						<h4 class="font-semibold text-md mb-2 text-gray-700">
+					<div class="rounded-xl border border-slate-200 p-3">
+						<h4 class="font-semibold text-md mb-2 text-slate-700">
 							✅ Назначенные услуги
 						</h4>
 						<div class="space-y-1 max-h-96 overflow-y-auto">
 							<div
 								v-for="service in doctorServices"
 								:key="service.id"
-								class="flex justify-between items-center p-2 border rounded hover:bg-gray-50">
+								class="flex justify-between items-center rounded-lg border border-slate-200 p-2 hover:bg-slate-50">
 								<div class="flex-1">
 									<p class="font-medium text-sm">
 										{{ service.name }}
 									</p>
-									<p class="text-xs text-gray-500">
+									<p class="text-xs text-slate-500">
 										{{ service.duration }} мин |
 										{{ service.price }} ₽
 									</p>
 								</div>
 								<button
 									@click="removeService(service.id)"
-									class="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 ml-2">
+									class="rounded bg-rose-700 px-2 py-1 text-xs text-white hover:bg-rose-800 ml-2">
 									Удалить
 								</button>
 							</div>
 							<div
 								v-if="doctorServices.length === 0"
-								class="text-center text-gray-500 py-4 text-sm">
+								class="text-center text-slate-500 py-4 text-sm">
 								Нет назначенных услуг
 							</div>
 						</div>
@@ -293,15 +275,15 @@
 		<!-- Модальное окно настройки расписания -->
 		<div
 			v-if="showScheduleModal"
-			class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+			class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
 			<div
-				class="relative top-20 mx-auto p-5 border w-[500px] shadow-lg rounded-md bg-white">
+				class="relative top-20 mx-auto w-[500px] rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
 				<h3 class="text-lg font-medium mb-4">
 					Настройка расписания для {{ selectedDoctor?.full_name }}
 				</h3>
 
-				<div class="mb-6 p-4 border rounded-lg bg-gray-50">
-					<h4 class="font-semibold text-md mb-3 text-gray-700">
+				<div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+					<h4 class="font-semibold text-md mb-3 text-slate-700">
 						📅 Установить шаблон расписания
 					</h4>
 					<div class="space-y-3">
@@ -356,8 +338,8 @@
 					</div>
 				</div>
 
-				<div class="mb-4 p-4 border rounded-lg bg-gray-50">
-					<h4 class="font-semibold text-md mb-3 text-gray-700">
+				<div class="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+					<h4 class="font-semibold text-md mb-3 text-slate-700">
 						⚙️ Генерация слотов
 					</h4>
 					<div class="space-y-3">

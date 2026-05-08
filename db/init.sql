@@ -115,9 +115,9 @@ INSERT INTO clinic_settings (name, address, phone, email, working_hours) VALUES
 
 -- Создание пользователей
 INSERT INTO users (email, hashed_password, full_name, phone, role) VALUES 
-('admin@clinic.ru', '$2b$12$mnxX2kMwUoe36LDik6SfIO3dC6rVXKgSFojvJMdxD/wCSsygrU4NS', 'Иванов Иван Администратор', '+7 (495) 111-11-11', 'admin'),
-('doctor@clinic.ru', '$2b$12$puDFDWUMkhqZVrfWdIUPlOB8sCLsDFmK5RzkRRQzg8bDFdJz2CkzW', 'Петрова Анна Врач', '+7 (495) 222-22-22', 'doctor'),
-('patient@clinic.ru', '$2b$12$puDFDWUMkhqZVrfWdIUPlOB8sCLsDFmK5RzkRRQzg8bDFdJz2CkzW', 'Сидоров Петр Пациент', '+7 (495) 333-33-33', 'patient');
+('admin@clinic.ru', '$2b$12$Bc0FMJgkzRrNwiI5IgR1WuO1Bs4ZZIgQEWcmMbWM2y0rAu/00yiNK', 'Иванов Иван Администратор', '+7 (495) 111-11-11', 'admin'),
+('doctor@clinic.ru', '$2b$12$Bc0FMJgkzRrNwiI5IgR1WuO1Bs4ZZIgQEWcmMbWM2y0rAu/00yiNK', 'Петрова Анна Врач', '+7 (495) 222-22-22', 'doctor'),
+('patient@clinic.ru', '$2b$12$Bc0FMJgkzRrNwiI5IgR1WuO1Bs4ZZIgQEWcmMbWM2y0rAu/00yiNK', 'Сидоров Петр Пациент', '+7 (495) 333-33-33', 'patient');
 
 -- Создание врачей
 INSERT INTO doctors (user_id, specialization, cabinet_number, appointment_duration) VALUES 

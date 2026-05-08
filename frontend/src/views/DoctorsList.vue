@@ -1,7 +1,7 @@
 <template>
 	<div class="space-y-6">
-		<div class="bg-white shadow rounded-lg p-6">
-			<h1 class="text-2xl font-bold mb-4">Наши врачи</h1>
+		<div class="page-card">
+			<h1 class="mb-4">Наши врачи</h1>
 
 			<div class="mb-4 grid md:grid-cols-2 gap-4">
 				<div>
@@ -35,7 +35,7 @@
 			</div>
 			<div
 				v-else-if="filteredDoctors.length === 0"
-				class="text-center py-8 text-gray-500">
+				class="text-center py-8 text-slate-500">
 				Врачи не найдены
 			</div>
 			<div
@@ -44,14 +44,14 @@
 				<div
 					v-for="doctor in filteredDoctors"
 					:key="doctor.id"
-					class="border rounded-lg p-4 hover:shadow-lg transition">
+					class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow">
 					<h3 class="text-lg font-semibold">
 						{{ doctor.full_name }}
 					</h3>
-					<p class="text-gray-600">
+					<p class="text-slate-600">
 						Специализация: {{ doctor.specialization }}
 					</p>
-					<p class="text-gray-600">
+					<p class="text-slate-600">
 						Кабинет: {{ doctor.cabinet_number }}
 					</p>
 					<router-link

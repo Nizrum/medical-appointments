@@ -1,10 +1,10 @@
 <template>
 	<div class="space-y-6">
-		<div class="bg-white shadow rounded-lg p-6">
-			<h1 class="text-2xl font-bold mb-4">
+		<div class="page-card">
+			<h1 class="mb-4">
 				Добро пожаловать, {{ authStore.user?.full_name }}
 			</h1>
-			<p class="text-gray-600">
+			<p class="text-slate-600">
 				Ваша роль:
 				<span class="font-semibold">
 					{{ roleText }}
@@ -13,7 +13,7 @@
 		</div>
 
 		<div class="grid md:grid-cols-2 gap-6">
-			<div class="bg-white shadow rounded-lg p-6">
+			<div class="page-card">
 				<h2 class="text-xl font-semibold mb-4">Быстрые действия</h2>
 				<div class="space-y-3">
 					<router-link
@@ -29,7 +29,7 @@
 				</div>
 			</div>
 
-			<div class="bg-white shadow rounded-lg p-6">
+			<div class="page-card">
 				<h2 class="text-xl font-semibold mb-4">Последние записи</h2>
 				<div
 					v-if="loading"
@@ -38,7 +38,7 @@
 				</div>
 				<div
 					v-else-if="recentAppointments.length === 0"
-					class="text-gray-500 text-center py-4">
+					class="text-slate-500 text-center py-4">
 					Нет записей
 				</div>
 				<div

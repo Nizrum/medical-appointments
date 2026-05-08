@@ -1,14 +1,16 @@
 <template>
-	<div class="min-h-screen flex items-center justify-center bg-gray-50">
-		<div class="max-w-md w-full space-y-8">
-			<div>
-				<h2
-					class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-					Создать новый аккаунт
+	<div class="min-h-screen flex items-center justify-center px-4 py-10">
+		<div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+			<div class="mb-8 text-center">
+				<h2 class="text-3xl font-semibold tracking-tight text-slate-900">
+					Регистрация пациента
 				</h2>
+				<p class="mt-2 text-sm text-slate-500">
+					Создание учетной записи для онлайн-записи
+				</p>
 			</div>
 			<form
-				class="mt-8 space-y-6"
+				class="space-y-5"
 				@submit.prevent="handleRegister">
 				<div class="space-y-4">
 					<div>
@@ -46,7 +48,7 @@
 
 				<div
 					v-if="error"
-					class="text-red-600 text-sm text-center">
+					class="rounded-lg bg-rose-50 px-3 py-2 text-center text-sm text-rose-700">
 					{{ error }}
 				</div>
 
@@ -61,7 +63,7 @@
 				<div class="text-center">
 					<router-link
 						to="/login"
-						class="text-blue-600 hover:text-blue-500">
+						class="text-sm font-medium text-blue-700 hover:text-blue-800">
 						Уже есть аккаунт? Войти
 					</router-link>
 				</div>

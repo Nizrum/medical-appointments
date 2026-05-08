@@ -1,37 +1,35 @@
 <template>
-	<div class="min-h-screen flex items-center justify-center bg-gray-50">
-		<div class="max-w-md w-full space-y-8">
-			<div>
-				<h2
-					class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-					Войти в аккаунт
+	<div class="min-h-screen flex items-center justify-center px-4 py-10">
+		<div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+			<div class="mb-8 text-center">
+				<h2 class="text-3xl font-semibold tracking-tight text-slate-900">
+					Вход в систему
 				</h2>
+				<p class="mt-2 text-sm text-slate-500">
+					Безопасный доступ к онлайн-записям пациентов
+				</p>
 			</div>
 			<form
-				class="mt-8 space-y-6"
+				class="space-y-5"
 				@submit.prevent="handleLogin">
-				<div class="rounded-md shadow-sm -space-y-px">
-					<div class="mb-5">
-						<input
-							v-model="email"
-							type="email"
-							required
-							class="input-field rounded-t-md"
-							placeholder="Адрес электронной почты" />
-					</div>
-					<div>
-						<input
-							v-model="password"
-							type="password"
-							required
-							class="input-field rounded-b-md"
-							placeholder="Пароль" />
-					</div>
+				<div class="space-y-4">
+					<input
+						v-model="email"
+						type="email"
+						required
+						class="input-field"
+						placeholder="Адрес электронной почты" />
+					<input
+						v-model="password"
+						type="password"
+						required
+						class="input-field"
+						placeholder="Пароль" />
 				</div>
 
 				<div
 					v-if="error"
-					class="text-red-600 text-sm text-center">
+					class="rounded-lg bg-rose-50 px-3 py-2 text-center text-sm text-rose-700">
 					{{ error }}
 				</div>
 
@@ -39,14 +37,14 @@
 					<button
 						type="submit"
 						class="btn-primary w-full">
-						Войти
+						Войти в аккаунт
 					</button>
 				</div>
 
 				<div class="text-center">
 					<router-link
 						to="/register"
-						class="text-blue-600 hover:text-blue-500">
+						class="text-sm font-medium text-blue-700 hover:text-blue-800">
 						Нет аккаунта? Зарегистрироваться
 					</router-link>
 				</div>
@@ -71,7 +69,6 @@
 			email: email.value,
 			password: password.value,
 		});
-        console.log(result)
 
 		if (result.success) {
 			router.push("/dashboard");

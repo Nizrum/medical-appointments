@@ -1,19 +1,19 @@
 <template>
-	<div class="bg-white shadow rounded-lg p-6">
-		<h1 class="text-2xl font-bold mb-6">Запись на прием</h1>
+	<div class="page-card">
+		<h1 class="mb-6">Запись на прием</h1>
 
 		<div
 			v-if="doctor"
 			class="mb-6">
 			<h2 class="text-xl font-semibold">Врач: {{ doctor.full_name }}</h2>
-			<p class="text-gray-600">
+			<p class="text-slate-600">
 				Специализация: {{ doctor.specialization }}
 			</p>
-			<p class="text-gray-600">Кабинет: {{ doctor.cabinet_number }}</p>
+			<p class="text-slate-600">Кабинет: {{ doctor.cabinet_number }}</p>
 		</div>
 
 		<div class="mb-6">
-			<label class="block text-sm font-medium text-gray-700 mb-2"
+			<label class="block text-sm font-medium text-slate-700 mb-2"
 				>Выберите дату</label
 			>
 			<input
@@ -31,7 +31,7 @@
 		</div>
 		<div
 			v-else-if="timeSlots && timeSlots.length === 0 && selectedDate"
-			class="text-center py-4 text-gray-500">
+			class="text-center py-4 text-slate-500">
 			Нет доступных слотов на эту дату
 		</div>
 		<div
@@ -44,10 +44,10 @@
 					:key="slot.id"
 					@click="selectSlot(slot)"
 					:class="[
-						'p-2 rounded-lg border transition',
+						'p-2.5 rounded-xl border border-slate-300 transition text-sm font-medium',
 						selectedSlot?.id === slot.id
-							? 'bg-blue-600 text-white border-blue-600'
-							: 'hover:bg-gray-50',
+							? 'bg-blue-700 text-white border-blue-700'
+							: 'bg-white text-slate-700 hover:bg-slate-50',
 					]">
 					{{ formatTime(slot.start_time) }}
 				</button>
@@ -57,7 +57,7 @@
 		<div
 			v-if="selectedSlot"
 			class="mb-6">
-			<label class="block text-sm font-medium text-gray-700 mb-2"
+			<label class="block text-sm font-medium text-slate-700 mb-2"
 				>Жалобы (необязательно)</label
 			>
 			<textarea
@@ -69,7 +69,7 @@
 
 		<div
 			v-if="error"
-			class="text-red-600 text-sm mb-4">
+			class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 mb-4">
 			{{ error }}
 		</div>
 

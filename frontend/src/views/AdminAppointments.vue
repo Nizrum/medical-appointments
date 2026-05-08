@@ -1,11 +1,11 @@
 <template>
-	<div class="bg-white shadow rounded-lg p-6">
-		<h1 class="text-2xl font-bold mb-6">Управление записями</h1>
+	<div class="page-card">
+		<h1 class="mb-6">Управление записями</h1>
 
 		<!-- Фильтры -->
 		<div class="grid md:grid-cols-4 gap-4 mb-6">
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-2"
+				<label class="block text-sm font-medium text-slate-700 mb-2"
 					>Врач</label
 				>
 				<select
@@ -23,7 +23,7 @@
 			</div>
 
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-2"
+				<label class="block text-sm font-medium text-slate-700 mb-2"
 					>Статус</label
 				>
 				<select
@@ -39,7 +39,7 @@
 			</div>
 
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-2"
+				<label class="block text-sm font-medium text-slate-700 mb-2"
 					>Дата от</label
 				>
 				<input
@@ -50,7 +50,7 @@
 			</div>
 
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-2"
+				<label class="block text-sm font-medium text-slate-700 mb-2"
 					>Дата до</label
 				>
 				<input
@@ -68,46 +68,25 @@
 		</div>
 		<div
 			v-else-if="adminStore.appointments.length === 0"
-			class="text-center py-8 text-gray-500">
+			class="text-center py-8 text-slate-500">
 			Нет записей
 		</div>
 		<div
 			v-else
 			class="overflow-x-auto">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
+			<table class="data-table">
+				<thead>
 					<tr>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Пациент
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Врач
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Дата
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Время
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Услуга
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Статус
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-							Действия
-						</th>
+						<th>Пациент</th>
+						<th>Врач</th>
+						<th>Дата</th>
+						<th>Время</th>
+						<th>Услуга</th>
+						<th>Статус</th>
+						<th>Действия</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
+				<tbody class="bg-white">
 					<tr
 						v-for="appointment in adminStore.appointments"
 						:key="appointment.id">
@@ -115,13 +94,13 @@
 							<div class="font-medium">
 								{{ appointment.patient_name || "—" }}
 							</div>
-							<div class="text-sm text-gray-500">
+							<div class="text-sm text-slate-500">
 								{{ appointment.patient_phone || "—" }}
 							</div>
 						</td>
 						<td class="px-6 py-4">
 							<div>{{ appointment.doctor_name || "—" }}</div>
-							<div class="text-sm text-gray-500">
+							<div class="text-sm text-slate-500">
 								{{ appointment.doctor_specialization || "—" }}
 							</div>
 						</td>
@@ -138,7 +117,7 @@
 						<td class="px-6 py-4">
 							<span
 								:class="statusClass(appointment.status)"
-								class="px-2 py-1 text-xs font-semibold rounded-full">
+								class="status-badge">
 								{{ statusText(appointment.status) }}
 							</span>
 						</td>
@@ -146,12 +125,12 @@
 							<button
 								v-if="appointment.status === 'scheduled'"
 								@click="confirmAppointment(appointment.id)"
-								class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mr-2 text-sm">
+								class="btn-primary mr-2 text-sm px-3 py-1">
 								Подтвердить
 							</button>
 							<button
 								@click="openRescheduleModal(appointment)"
-								class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">
+								class="btn-secondary text-sm px-3 py-1">
 								Перенести
 							</button>
 						</td>
@@ -163,9 +142,9 @@
 		<!-- Модальное окно переноса записи -->
 		<div
 			v-if="showRescheduleModal"
-			class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+			class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
 			<div
-				class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+				class="relative top-20 mx-auto w-96 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
 				<h3 class="text-lg font-medium mb-4">Перенос записи</h3>
 				<p class="mb-2">
 					Пациент: {{ selectedAppointment?.patient_name }}
@@ -175,7 +154,7 @@
 				</p>
 
 				<div class="mb-4">
-					<label class="block text-sm font-medium text-gray-700 mb-2"
+					<label class="block text-sm font-medium text-slate-700 mb-2"
 						>Новая дата</label
 					>
 					<input
@@ -188,7 +167,7 @@
 				<div
 					v-if="availableSlots.length > 0"
 					class="mb-4">
-					<label class="block text-sm font-medium text-gray-700 mb-2"
+					<label class="block text-sm font-medium text-slate-700 mb-2"
 						>Новое время</label
 					>
 					<select
@@ -206,7 +185,7 @@
 
 				<div
 					v-else-if="newDate"
-					class="text-center text-gray-500 mb-4">
+					class="text-center text-slate-500 mb-4">
 					Нет доступных слотов на эту дату
 				</div>
 
@@ -259,12 +238,12 @@
 
 	const statusClass = (status) => {
 		const classes = {
-			scheduled: "bg-yellow-100 text-yellow-800",
-			confirmed: "bg-green-100 text-green-800",
-			completed: "bg-blue-100 text-blue-800",
-			cancelled: "bg-red-100 text-red-800",
+		scheduled: "bg-amber-50 text-amber-700",
+		confirmed: "bg-emerald-50 text-emerald-700",
+		completed: "bg-blue-50 text-blue-700",
+		cancelled: "bg-rose-50 text-rose-700",
 		};
-		return classes[status] || "bg-gray-100 text-gray-800";
+	return classes[status] || "bg-slate-100 text-slate-700";
 	};
 
 	const applyFilters = () => {

@@ -1,9 +1,12 @@
 <template>
-	<div id="app">
+	<div
+		id="app"
+		class="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200">
 		<Navbar v-if="authStore.isAuthenticated" />
 		<main
 			:class="{
-				'container mx-auto px-4 py-8': authStore.isAuthenticated,
+				'mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8':
+					authStore.isAuthenticated,
 			}">
 			<router-view v-if="!loading" />
 			<LoadingSpinner v-else />

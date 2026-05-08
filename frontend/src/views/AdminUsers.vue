@@ -1,5 +1,5 @@
 <template>
-	<div class="bg-white shadow rounded-lg p-6">
+	<div class="page-card">
 		<h1 class="text-2xl font-bold mb-6">Управление пользователями</h1>
 
 		<div class="mb-4">
@@ -19,32 +19,17 @@
 		<div
 			v-else
 			class="overflow-x-auto">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
+			<table class="data-table">
+				<thead>
 					<tr>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Имя
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Email
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Телефон
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Роль
-						</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-							Действия
-						</th>
+						<th>Имя</th>
+						<th>Email</th>
+						<th>Телефон</th>
+						<th>Роль</th>
+						<th>Действия</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
+				<tbody class="bg-white">
 					<tr
 						v-for="user in users"
 						:key="user.id">
@@ -60,14 +45,14 @@
 						<td class="px-6 py-4 whitespace-nowrap">
 							<span
 								:class="roleClass(user.role)"
-								class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+								class="status-badge">
 								{{ user.role }}
 							</span>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
 							<button
 								@click="openRoleModal(user)"
-								class="text-blue-600 hover:text-blue-900 mr-3">
+								class="text-sm font-medium text-blue-700 hover:text-blue-900 mr-3">
 								Изменить роль
 							</button>
 						</td>
@@ -79,9 +64,9 @@
 		<!-- Role Change Modal -->
 		<div
 			v-if="showRoleModal"
-			class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+			class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-slate-900/40 backdrop-blur-sm">
 			<div
-				class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+				class="relative top-20 mx-auto w-96 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
 				<h3 class="text-lg font-medium mb-4">
 					Изменить роль для {{ selectedUser?.full_name }}
 				</h3>
@@ -187,11 +172,11 @@
 
 	const roleClass = (role) => {
 		const classes = {
-			patient: "bg-green-100 text-green-800",
-			doctor: "bg-blue-100 text-blue-800",
-			admin: "bg-purple-100 text-purple-800",
+			patient: "bg-emerald-50 text-emerald-700",
+			doctor: "bg-blue-50 text-blue-700",
+			admin: "bg-violet-50 text-violet-700",
 		};
-		return classes[role] || "bg-gray-100 text-gray-800";
+		return classes[role] || "bg-slate-100 text-slate-700";
 	};
 
 	onMounted(() => {
