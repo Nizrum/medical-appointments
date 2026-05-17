@@ -43,21 +43,16 @@ services:
         command: uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload
 
     frontend:
-        build:
-            context: ./frontend
-            args:
-                VITE_API_URL: http://backend:${BACKEND_PORT}
+        build: ./frontend
         container_name: clinic_frontend
         depends_on:
             - backend
         ports:
             - "80:80"
-            - "5173:5173"
         networks:
             - clinic_network
         environment:
-            - VITE_API_URL=http://backend:${BACKEND_PORT}
-            - BACKEND_URL=http://backend:${BACKEND_PORT}
+            - BACKEND_URL=${BACKEND_URL}
 
 networks:
     clinic_network:
