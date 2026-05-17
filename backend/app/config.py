@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     host: str = "0.0.0.0"
     port: int = 8000
+    admin_email: str = "admin@clinic.ru"
+    admin_password: str = "admin"
 
     model_config = ConfigDict(
         env_file=".env",
@@ -21,4 +23,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

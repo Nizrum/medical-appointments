@@ -7,7 +7,7 @@
 					<router-link
 						:to="homeRoute"
 						class="rounded-md px-2 py-1 hover:bg-slate-100">
-						Система записи
+						Система управления онлайн-записями пациентов
 					</router-link>
 				</div>
 
