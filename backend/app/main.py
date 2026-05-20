@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .api import (
     auth_router,
@@ -39,12 +42,32 @@ def init_database():
                     truncate_password(settings.admin_password)
                 ),
                 full_name="Администратор",
-                phone="",
+                phone="88888888888",
                 role="admin",
                 is_active=True,
             )
             db.add(admin_user)
         db.commit()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Validation error", "errors": exc.errors()},
+    )
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 400:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Invalid request body - malformed JSON"},
+        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
 
 
 @app.on_event("startup")
