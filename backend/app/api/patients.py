@@ -80,16 +80,22 @@ def create_appointment(
 ):
     slot = (
         db.query(TimeSlot)
-        .filter(
-            TimeSlot.id == appointment_data.time_slot_id,
-            TimeSlot.status == "free",
-        )
+        .filter(TimeSlot.id == appointment_data.time_slot_id)
         .first()
     )
 
     if not slot:
+        raise HTTPException(status_code=404, detail="Time slot not found")
+
+    if slot.status != "free":
         raise HTTPException(
             status_code=400, detail="Time slot is not available"
+        )
+
+    if slot.doctor_id != appointment_data.doctor_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Selected doctor does not match the time slot's doctor",
         )
 
     existing = (
@@ -107,6 +113,20 @@ def create_appointment(
             status_code=400,
             detail="You already have an appointment at this time",
         )
+
+    if appointment_data.service_id:
+        service_assignment = db.execute(
+            doctor_services.select().where(
+                doctor_services.c.doctor_id == appointment_data.doctor_id,
+                doctor_services.c.service_id == appointment_data.service_id,
+            )
+        ).first()
+
+        if not service_assignment:
+            raise HTTPException(
+                status_code=400,
+                detail="This service is not provided by the selected doctor",
+            )
 
     appointment = Appointment(
         patient_id=current_user.id,
