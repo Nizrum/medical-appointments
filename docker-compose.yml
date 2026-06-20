@@ -35,12 +35,14 @@ services:
             ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
             HOST: ${BACKEND_HOST}
             PORT: ${BACKEND_PORT}
+            ADMIN_EMAIL: ${ADMIN_EMAIL}
+            ADMIN_PASSWORD: ${ADMIN_PASSWORD}
             ENVIRONMENT: ${ENVIRONMENT:-development}
         ports:
             - "${BACKEND_PORT}:${BACKEND_PORT}"
         networks:
             - clinic_network
-        command: uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload
+        command: uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT}
 
     frontend:
         build: ./frontend
