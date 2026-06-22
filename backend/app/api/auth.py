@@ -23,7 +23,15 @@ security = HTTPBearer(auto_error=False)
 
 
 def truncate_password(password: str) -> str:
-    return password[:72] if password else ""
+    if not password:
+        return ""
+    cleaned = password.encode("utf-8", errors="ignore").decode("utf-8")
+    cleaned = cleaned.replace("\x00", "")
+    return cleaned[:72]
+
+
+def hash_password(password: str) -> str:
+    return get_password_hash(truncate_password(password))
 
 
 def verify_password(plain_password, hashed_password):
@@ -107,7 +115,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             status_code=400, detail="Only patient registration is allowed"
         )
 
-    hashed_password = get_password_hash(truncate_password(user_data.password))
+    hashed_password = hash_password(user_data.password)
     db_user = User(
         email=user_data.email,
         hashed_password=hashed_password,
@@ -134,7 +142,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == user_data.email).first()
     if not user or not verify_password(
-        user_data.password, user.hashed_password
+        truncate_password(user_data.password), user.hashed_password
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -184,9 +192,7 @@ def update_profile(
             raise HTTPException(status_code=409, detail="Email already taken")
         current_user.email = user_data.email
     if user_data.password:
-        current_user.hashed_password = get_password_hash(
-            truncate_password(user_data.password)
-        )
+        current_user.hashed_password = hash_password(user_data.password)
 
     db.commit()
     db.refresh(current_user)

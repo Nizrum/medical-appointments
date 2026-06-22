@@ -15,19 +15,22 @@ def get_db():
         db.close()
 
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
 ):
-    token = credentials.credentials
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not credentials:
+        raise credentials_exception
+
+    token = credentials.credentials
     try:
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]

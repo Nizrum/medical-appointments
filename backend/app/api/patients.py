@@ -25,7 +25,7 @@ def get_doctors(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_patient),
 ):
-    query = db.query(Doctor).filter(Doctor.is_active == True)
+    query = db.query(Doctor).filter(Doctor.is_active)
     if specialization:
         query = query.filter(
             Doctor.specialization.ilike(f"%{specialization}%")

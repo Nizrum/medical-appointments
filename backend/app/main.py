@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.openapi.utils import get_openapi
+from fastapi.encoders import jsonable_encoder
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .api import (
@@ -54,8 +56,9 @@ def init_database():
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=422,
-        content={"detail": "Validation error", "errors": exc.errors()},
+        content={"detail": jsonable_encoder(exc.errors())},
     )
+
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -63,11 +66,58 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         return JSONResponse(
             status_code=400,
             content={"detail": "Invalid request body - malformed JSON"},
+            headers=exc.headers,
         )
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail},
+        headers=exc.headers,
     )
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        routes=app.routes,
+    )
+
+    error_400 = {"description": "Bad Request"}
+    error_401 = {"description": "Unauthorized"}
+    error_403 = {"description": "Forbidden"}
+    error_404 = {"description": "Not Found"}
+    error_409 = {"description": "Conflict"}
+
+    for path, path_item in openapi_schema.get("paths", {}).items():
+        for method, operation in path_item.items():
+            if method not in ("get", "post", "put", "delete", "patch"):
+                continue
+
+            responses = operation.setdefault("responses", {})
+
+            if operation.get("security"):
+                responses.setdefault("401", error_401)
+                responses.setdefault("403", error_403)
+
+            if method in ("post", "put", "patch"):
+                responses.setdefault("400", error_400)
+
+            if "{" in path:
+                responses.setdefault("404", error_404)
+
+            if path.startswith("/auth/register") and method == "post":
+                responses.setdefault("409", error_409)
+            if path == "/auth/me" and method == "put":
+                responses.setdefault("409", error_409)
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 
 @app.on_event("startup")
